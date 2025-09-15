@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver2a());
+    println!("{}", solver3());
 }
 
 /// Finds the sum of all multiples of 3 and 5 by finding the sums of each individually and then
@@ -57,4 +57,76 @@ fn solver2a() -> u32 {
         term2 = next;
     }
     sum
+}
+
+struct PrimeNumbers {
+    cache: Vec<u64>,
+}
+
+impl PrimeNumbers {
+    // A better implementation might let you specify your own starting vector
+    // but then I would need to at least validate it which in part eliminates
+    // any benefit unless I blindly trust the input
+    pub fn new() -> PrimeNumbers {
+        // Seed the cache with known primes
+        PrimeNumbers {
+            cache: vec![2, 3, 5, 7, 11, 13],
+        }
+    }
+
+    fn add_primes(&mut self, to: u64) {
+        let mut next = self.cache.last().unwrap_or(&0) + 1;
+        while next < to {
+            self.cache_if_prime(next);
+            next += 1;
+        }
+    }
+
+    fn cache_if_prime(&mut self, n: u64) {
+        let max_check = n.isqrt();
+        let upper_index = self
+            .cache
+            .iter()
+            .position(|prime| *prime > max_check)
+            .unwrap_or(self.cache.len() - 1);
+        if self.cache[0..upper_index]
+            .iter()
+            .all(|prime| n % prime != 0)
+        {
+            self.cache.push(n);
+        }
+    }
+
+    pub fn get_prime_factors(&mut self, n: u64, out: &mut Vec<u64>) {
+        if self.cache.binary_search(&n).is_ok() {
+            out.push(n);
+            return;
+        }
+        let max = n.isqrt();
+        self.add_primes(max);
+        if let Some(factor) = self
+            .cache
+            .iter()
+            .filter(|prime| **prime != 1 && **prime <= max)
+            .find_map(|prime| if n % *prime == 0 { Some(prime) } else { None })
+        {
+            out.push(*factor);
+            self.get_prime_factors(n / factor, out)
+        } else {
+            out.push(n)
+        }
+    }
+}
+
+/// This one was a bit messier than I'd like ironically because I was probably trying to be
+/// too clever and there is a lot of leftover unnecessary work from previous iterations. I've
+/// had my fill with this one so I'm just going to leave this inelegant solution in for now.
+fn solver3() -> u64 {
+    let mut primes = PrimeNumbers::new();
+
+    let mut prime_factors = Vec::new();
+    primes.get_prime_factors(600851475143, &mut prime_factors);
+
+    prime_factors.sort();
+    *prime_factors.last().expect("No prime factors found")
 }
