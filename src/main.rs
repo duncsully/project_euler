@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver3());
+    println!("{}", solver4());
 }
 
 /// Finds the sum of all multiples of 3 and 5 by finding the sums of each individually and then
@@ -129,4 +129,53 @@ fn solver3() -> u64 {
 
     prime_factors.sort();
     *prime_factors.last().expect("No prime factors found")
+}
+
+// Should probably consider making this generic. Also this is probably not idiomatic at all...
+fn is_palindrome(n: &u32) -> bool {
+    let n_str = n.to_string();
+    let len = n_str.len();
+    let mid = len / 2;
+    n_str[0..mid]
+        .char_indices()
+        .all(|(i, char)| char.to_string() == n_str[len - i - 1..len - i])
+}
+
+/// I'm pleased with how this one turned out (ignoring the palindrome check...)
+/// because it *seems* like more idiomatic Rust this time around. It could be made
+/// a bit more efficient and once again I'm probably missing some mathgic but this
+/// one felt less bad than the last problem.
+fn solver4() -> u32 {
+    // Two three-digit numbers would result in a six-digit product
+    (100_000..999_999)
+        .filter(is_palindrome)
+        .rev()
+        .find_map(|product| {
+            // The factors switch after the sqrt, so we only need to check up to it
+            let max = product.isqrt();
+            if let Some(factor) = (100..max).rev().find(|check_factor| {
+                product % check_factor == 0 && (100..999).contains(&(product / check_factor))
+            }) {
+                println!("Factors: {factor} * {}", product / factor);
+                Some(product)
+            } else {
+                None
+            }
+        })
+        .unwrap()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_palindrome_works() {
+        assert!(is_palindrome(&1));
+        assert!(is_palindrome(&1001));
+        assert!(is_palindrome(&51615));
+        assert!(is_palindrome(&987789));
+        assert!(!is_palindrome(&123));
+        assert!(!is_palindrome(&1212));
+    }
 }
