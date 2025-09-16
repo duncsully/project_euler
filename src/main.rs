@@ -131,14 +131,10 @@ fn solver3() -> u64 {
     *prime_factors.last().expect("No prime factors found")
 }
 
-// Should probably consider making this generic. Also this is probably not idiomatic at all...
-fn is_palindrome(n: &u32) -> bool {
+fn is_palindrome(n: &impl ToString) -> bool {
     let n_str = n.to_string();
-    let len = n_str.len();
-    let mid = len / 2;
-    n_str[0..mid]
-        .char_indices()
-        .all(|(i, char)| char.to_string() == n_str[len - i - 1..len - i])
+    let reverse: String = n_str.chars().rev().collect();
+    n_str == reverse
 }
 
 /// I'm pleased with how this one turned out (ignoring the palindrome check...)
@@ -150,7 +146,7 @@ fn solver4() -> u32 {
     (100_000..999_999)
         .filter(is_palindrome)
         .rev()
-        .find_map(|product| {
+        .find_map(|product: u32| {
             // The factors switch after the sqrt, so we only need to check up to it
             let max = product.isqrt();
             if let Some(factor) = (100..max).rev().find(|check_factor| {
@@ -177,5 +173,8 @@ mod tests {
         assert!(is_palindrome(&987789));
         assert!(!is_palindrome(&123));
         assert!(!is_palindrome(&1212));
+
+        assert!(is_palindrome(&String::from("racecar")));
+        assert!(!is_palindrome(&String::from("extracredit")));
     }
 }
