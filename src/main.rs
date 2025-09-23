@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver5());
+    println!("{}", solver6());
 }
 
 /// Finds the sum of all multiples of 3 and 5 by finding the sums of each individually and then
@@ -168,6 +168,14 @@ fn solver4() -> u32 {
 /// exponent, but...maybe another time.
 fn solver5() -> u32 {
     2u32.pow(4) * 3u32.pow(2) * 5 * 7 * 11 * 13 * 17 * 19
+}
+
+/// Huh...OK that one was really straight forward. Though at least it helped me appreciate
+/// Rust's iterators even more with how easy it was to implement
+fn solver6() -> u64 {
+    let square_of_sums = (1..=100).sum::<u64>().pow(2);
+    let sum_of_squares = (1..=100).map(|num: u64| num.pow(2)).sum::<u64>();
+    square_of_sums - sum_of_squares
 }
 
 #[cfg(test)]
