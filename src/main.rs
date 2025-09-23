@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver7());
+    println!("{}", solver8());
 }
 
 /// Finds the sum of all multiples of 3 and 5 by finding the sums of each individually and then
@@ -200,6 +200,34 @@ fn solver6a(limit: u64) -> u64 {
 fn solver7() -> u64 {
     let mut primes = PrimeNumbers::new();
     primes.get_nth_prime(10_001)
+}
+
+/// Originally I wanted to be more clever by keeping track of a single mutable value where
+/// I'd divide the starting digit and then multiply the next digit in a sort of queue but
+/// 0s quickly shot down this approach without needing more complications to check for 0s
+/// within a range and start fresh with a new product whenever we found a range without 0s.
+/// So I went with a more naive brute force sliding range. Once again, Rust iterators to the
+/// rescue. Apparently there isn't any PDF for this one describing any clever tricks so...I
+/// guess I'm on my own if I want to optimize this.
+fn solver8() -> u64 {
+    let str_num = String::from(
+        "7316717653133062491922511967442657474235534919493496983520312774506326239578318016984801869478851843858615607891129494954595017379583319528532088055111254069874715852386305071569329096329522744304355766896648950445244523161731856403098711121722383113622298934233803081353362766142828064444866452387493035890729629049156044077239071381051585930796086670172427121883998797908792274921901699720888093776657273330010533678812202354218097512545405947522435258490771167055601360483958644670632441572215539753697817977846174064955149290862569321978468622482839722413756570560574902614079729686524145351004748216637048440319989000889524345065854122758866688116427171479924442928230863465674813919123162824586178664583591245665294765456828489128831426076900422421902267105562632111110937054421750694165896040807198403850962455444362981230987879927244284909188845801561660979191338754992005240636899125607176060588611646710940507754100225698315520005593572972571636269561882670428252483600823257530420752963450",
+    );
+    let mut start = 0;
+    let increment = 13;
+    let mut max = 0u64;
+    while start + increment < str_num.len() {
+        let product = str_num[start..start + increment]
+            .chars()
+            .map(|char| char.to_digit(10).expect("Not a digit"))
+            .map(u64::from)
+            .product();
+        if product > max {
+            max = product
+        }
+        start += 1;
+    }
+    max
 }
 
 #[cfg(test)]
