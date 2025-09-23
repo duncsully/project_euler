@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver6a(100));
+    println!("{}", solver7());
 }
 
 /// Finds the sum of all multiples of 3 and 5 by finding the sums of each individually and then
@@ -80,6 +80,15 @@ impl PrimeNumbers {
             self.cache_if_prime(next);
             next += 1;
         }
+    }
+
+    fn get_nth_prime(&mut self, n: usize) -> u64 {
+        let mut check = self.cache.last().unwrap_or(&1).clone();
+        while (self.cache.len()) < n {
+            check += 1;
+            self.cache_if_prime(check);
+        }
+        self.cache[n - 1]
     }
 
     fn cache_if_prime(&mut self, n: u64) {
@@ -178,11 +187,19 @@ fn solver6() -> u64 {
     square_of_sums - sum_of_squares
 }
 
-// OK, of course there were optimizations to make this run in O(1) even as the limit grows large
+/// OK, of course there were optimizations to make this run in O(1) even as the limit grows large
 fn solver6a(limit: u64) -> u64 {
     let sum = limit * (limit + 1) / 2;
     let sum_sq = (2 * limit + 1) * (limit + 1) * limit / 6;
     sum.pow(2) - sum_sq
+}
+
+/// Alright, so I did end up reusing the PrimeNumbers object, and ultimately this was brute
+/// force, but I guess still not too much for Rust to handle. I'm hoping there's some mathgic
+/// to make this more efficient.
+fn solver7() -> u64 {
+    let mut primes = PrimeNumbers::new();
+    primes.get_nth_prime(10_001)
 }
 
 #[cfg(test)]
