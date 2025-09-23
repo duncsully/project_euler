@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver6());
+    println!("{}", solver6a(100));
 }
 
 /// Finds the sum of all multiples of 3 and 5 by finding the sums of each individually and then
@@ -176,6 +176,13 @@ fn solver6() -> u64 {
     let square_of_sums = (1..=100).sum::<u64>().pow(2);
     let sum_of_squares = (1..=100).map(|num: u64| num.pow(2)).sum::<u64>();
     square_of_sums - sum_of_squares
+}
+
+// OK, of course there were optimizations to make this run in O(1) even as the limit grows large
+fn solver6a(limit: u64) -> u64 {
+    let sum = limit * (limit + 1) / 2;
+    let sum_sq = (2 * limit + 1) * (limit + 1) * limit / 6;
+    sum.pow(2) - sum_sq
 }
 
 #[cfg(test)]
