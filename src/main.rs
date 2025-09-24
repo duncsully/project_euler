@@ -1,7 +1,26 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver8());
+    println!("{}", solver9());
+}
+
+/// Another relatively brute force method with some optimizations based on the limits
+/// of what contendor numbers can be.
+fn solver9() -> i32 {
+    // Since x < y < z, we start at 1 and x can only ever be at most = 332 < 333 < 335
+    for x in 1..332i32 {
+        // Honestly, it's difficult to explain why the max is 500 - x / 2, but this
+        // is what I inferred after some manual enumeration
+        for y in x + 1..500 - x / 2 {
+            let z = 1000 - x - y;
+            let sum = f64::from(x.pow(2) + y.pow(2));
+            if (sum.sqrt()) == z as f64 {
+                println!("Found: {x} {y} {z}");
+                return x * y * z;
+            }
+        }
+    }
+    panic!("Answer not found!")
 }
 
 /// Originally I wanted to be more clever by keeping track of a single mutable value where
