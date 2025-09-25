@@ -1,7 +1,16 @@
 #![allow(dead_code)]
 
 fn main() {
-    println!("{}", solver9());
+    println!("{}", solver10(2_000_000));
+}
+
+/// Another case of Rust somewhat trivializing the problem, though this is likely not
+/// terribly efficient. Not to mention PrimeNumbers does not feel very well designed or
+/// idiomatic and so I'm only more prone to abusing it as I go.
+fn solver10(n: u64) -> u64 {
+    let mut primes = PrimeNumbers::new();
+    primes.add_primes(n);
+    primes.cache.iter().filter(|prime| **prime < n).sum()
 }
 
 /// Another relatively brute force method with some optimizations based on the limits
