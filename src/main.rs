@@ -1,9 +1,43 @@
 #![allow(dead_code)]
 
-use std::thread::{self, JoinHandle};
+use std::{
+    collections::HashMap,
+    thread::{self, JoinHandle},
+};
 
 fn main() {
-    println!("{}", solver11a());
+    println!("{}", solver12(500));
+}
+
+/// I'm never going to escape my PrimeNumbers, am I? Was easy enough to look up how to calculate
+/// the nth triangular number, and that you can get the number of divisors via prime factorization,
+/// which did make this relatively straight forward to solve and surprisingly quickly. Not sure if
+/// there is any optimization to this one other than maybe starting with a more sensible n depending
+/// on the input.
+fn solver12(divisors_min: u32) -> u64 {
+    let mut primes = PrimeNumbers::new();
+    let mut n = 1; // If this was less general purpose, we could start with something higher
+    loop {
+        let mut factors: Vec<u64> = Vec::new();
+        let mut factor_counts: HashMap<u64, u32> = HashMap::new();
+        let triangular_number = nth_triangular_number(n);
+        primes.get_prime_factors(triangular_number, &mut factors);
+
+        for factor in factors {
+            *factor_counts.entry(factor).or_default() += 1;
+        }
+
+        let divisors_count: u32 = factor_counts.values().map(|val| val + 1).product();
+        if divisors_count > divisors_min {
+            println!("The n={n} triangular number is the first with over 500 divisors:");
+            return triangular_number;
+        }
+        n += 1;
+    }
+}
+
+fn nth_triangular_number(n: u64) -> u64 {
+    n * (n + 1) / 2
 }
 
 // I attempted to use a const function to initialize the array but gave up so honestly
