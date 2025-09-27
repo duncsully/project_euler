@@ -2,11 +2,59 @@
 
 use std::{
     collections::HashMap,
+    fs,
     thread::{self, JoinHandle},
 };
 
 fn main() {
-    println!("{}", solver12(500));
+    println!("{}", solver13());
+}
+
+/// Alright, this was probably a little unorthodox. I finally decided to try out parsing
+/// a file for the input! As for solving, first off, it's pretty clear we would overflow
+/// with brute math so I got the idea to do elementary addition digit by digit. I collect
+/// the sum of each placement into a vector.
+///
+/// Now, one idea I had originally was to go through the effort to "carry over" any
+/// overflow into the next indices working from so that I'd have exactly 1 digit in each
+/// index in the vector, and then I could just grab the range of the "last" 10 items, but
+/// this seemed like needless work when I knew I needed only 10 of the 50+ digits.
+///
+/// Instead I realized that since each place is x10 from the next, I can just keep "shifting"
+/// my number and adding the next sum of the digits in a place. However, since there was
+/// still the possibility of carry-over, I needed to overshoot and cross my fingers that
+/// I had enough that nothing else was likely to affect the first 10 digits. 20 sums resulted in
+/// overflows so I settled for 15 sums, though after confirming the answer it so happens
+/// you only need the 11th sum, but of course this can't be guaranteed AFAIK. As usual
+/// there's probably some mathgic I'm missing, though.
+fn solver13() -> String {
+    let contents = fs::read_to_string("inputs/problem13.txt").expect("Unable to load input file");
+    // Create flat array with everything "rotated" so that the 1s digits are together, then 10s, etc.
+    // i.e. 50 virtual "rows" (placements) of 100 "columns" (digits in placement)
+    let mut digits = [0u8; 5000];
+    contents.lines().enumerate().for_each(|(row, line)| {
+        line.chars()
+            .rev()
+            .map(|char| char.to_digit(10).expect("Not a digit") as u8)
+            .enumerate()
+            .for_each(|(column, digit)| digits[100 * column + row] = digit);
+    });
+    // Worst case scenario = 9 * 100 = 900
+    let digit_sums: Vec<u16> = (0..5000)
+        .step_by(100)
+        .map(|i| digits[i..i + 100].iter().map(|digit| *digit as u16).sum())
+        .rev()
+        .collect();
+
+    let mut first_digits = 0;
+    // Honestly, this is probably not reliable but chances are an extra 5 digits in we're not going to have
+    // any more carry-overs...
+    for i in 0..15 {
+        first_digits += digit_sums[i] as u64;
+        // Shift all digits over to prepare adding the next
+        first_digits *= 10;
+    }
+    first_digits.to_string()[0..10].to_string()
 }
 
 /// I'm never going to escape my PrimeNumbers, am I? Was easy enough to look up how to calculate
