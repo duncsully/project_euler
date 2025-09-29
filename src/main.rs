@@ -7,7 +7,49 @@ use std::{
 };
 
 fn main() {
-    println!("{}", solver13());
+    println!("{}", solver14());
+}
+
+/// OK, I definitely overthought the last problem. This one was fun and relatively simple.
+/// I decided to try my hand at implementing an iterator which the Collatz sequence seemed
+/// well suited for. Another brute force approach without any attempt to optimize. I'll be
+/// very curious what the mathgic is for this one.
+fn solver14() -> u64 {
+    let mut max_len = 0;
+    let mut num_with_max = 0;
+    for n in 1..1_000_000 {
+        let n_collatz_sequence_len = collatz_sequence(n).count();
+        if n_collatz_sequence_len > max_len {
+            max_len = n_collatz_sequence_len;
+            num_with_max = n;
+        }
+    }
+    println!("{num_with_max} produces Collatz sequence of length {max_len}");
+    num_with_max
+}
+
+struct CollatzSequence {
+    curr: u64,
+}
+
+impl Iterator for CollatzSequence {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.curr == 1 {
+            None
+        } else if self.curr % 2 == 0 {
+            self.curr /= 2;
+            Some(self.curr)
+        } else {
+            self.curr = 3 * self.curr + 1;
+            Some(self.curr)
+        }
+    }
+}
+
+fn collatz_sequence(start: u64) -> CollatzSequence {
+    CollatzSequence { curr: start }
 }
 
 /// Alright, this was probably a little unorthodox. I finally decided to try out parsing
@@ -479,5 +521,13 @@ mod tests {
 
         assert!(is_palindrome(&String::from("racecar")));
         assert!(!is_palindrome(&String::from("extracredit")));
+    }
+
+    #[test]
+    fn collatz_sequence_works() {
+        assert_eq!(
+            collatz_sequence(13).collect::<Vec<u64>>(),
+            vec![40, 20, 10, 5, 16, 8, 4, 2, 1]
+        )
     }
 }
