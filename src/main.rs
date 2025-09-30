@@ -7,13 +7,34 @@ use std::{
 };
 
 fn main() {
-    println!("{}", solver14());
+    println!("{}", solver15());
+}
+
+/// Did a little research because this felt familiar from my combinatorics class
+/// way back when. Turns out this is just a combination of essentially 40 choose 20.
+/// Or at least I thought I figured out the mathgic but I needed u128s in order to
+/// not overflow, so there must be more optimizations that can still be made.
+fn solver15() -> u128 {
+    combinations_count(20 + 20, 20)
+}
+
+fn combinations_count(items_count: u128, pick: u128) -> u128 {
+    let lower = items_count - pick + 1;
+    (lower..=items_count).product::<u128>() / factorial(pick)
+}
+
+// TODO: Make generic and maybe memoize
+fn factorial(n: u128) -> u128 {
+    (1..=n).product()
 }
 
 /// OK, I definitely overthought the last problem. This one was fun and relatively simple.
 /// I decided to try my hand at implementing an iterator which the Collatz sequence seemed
 /// well suited for. Another brute force approach without any attempt to optimize. I'll be
 /// very curious what the mathgic is for this one.
+///
+/// OK, all very obvious optimizations in hindsight. Nothing terribly interesting enough for
+/// me to retroactively add.
 fn solver14() -> u64 {
     let mut max_len = 0;
     let mut num_with_max = 0;
