@@ -1,13 +1,50 @@
 #![allow(dead_code)]
 
 use std::{
+    cmp::max,
     collections::HashMap,
     fs,
     thread::{self, JoinHandle},
 };
 
 fn main() {
-    println!("{}", solver17());
+    println!("{}", solver18());
+}
+
+/// Well they at least tipped us off this time that we'll be revisiting this problem
+/// with a larger triangle later so I tried to find the mathgic right away. Essentially
+/// we have a DAG, though thankfully it's simple enough that I didn't actually need
+/// any complex data structures. The order of the parsed numbers is already a topological
+/// sorting so then I can just do some good ol' dynamic programming to iteratively
+/// calculate each node's "length" from the starting node. Then I just find the max length.
+fn solver18() -> u32 {
+    let content = fs::read_to_string("inputs/problem18.txt").expect("Unable to read input");
+
+    max_path_through_triangle(&content)
+}
+
+fn max_path_through_triangle(triangle: &str) -> u32 {
+    let mut length_map = HashMap::new();
+    for (y, line) in triangle.lines().enumerate() {
+        for (x, num) in line
+            .split(' ')
+            .map(|string| string.parse::<u32>().expect("Not a number"))
+            .enumerate()
+        {
+            let top_left: u32 = if y != 0 && x != 0 {
+                *length_map.entry((y - 1, x - 1)).or_default()
+            } else {
+                0
+            };
+            let top_right: u32 = if y != 0 {
+                *length_map.entry((y - 1, x)).or_default()
+            } else {
+                0
+            };
+            length_map.insert((y, x), num + max(top_left, top_right));
+        }
+    }
+    *length_map.values().max().expect("No max found")
 }
 
 /// This one was weird because it was a lot of manual enumeration. As a base, 1-19
