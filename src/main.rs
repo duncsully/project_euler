@@ -7,7 +7,28 @@ use std::{
 };
 
 fn main() {
-    println!("{}", solver15());
+    println!("{}", solver16());
+}
+
+/// Good ol' integer overflows... Since the operation was simple, I basically made
+/// a very rudimentary big int implementation with a vector to store the digits,
+/// manually iterating it 1000 times and doubling each digit, adding a carry over
+/// if it exists. The order of the digits don't actually matter when they're just
+/// being summed in the end.
+fn solver16() -> u32 {
+    let mut digits = vec![1];
+    for _ in 0..1000 {
+        let mut carry = 0;
+        for digit in &mut digits {
+            let double = *digit * 2;
+            *digit = double % 10 + carry;
+            carry = double / 10;
+        }
+        if carry > 0 {
+            digits.push(carry)
+        }
+    }
+    digits.iter().sum()
 }
 
 /// Did a little research because this felt familiar from my combinatorics class
