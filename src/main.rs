@@ -8,7 +8,69 @@ use std::{
 };
 
 fn main() {
-    println!("{}", solver18());
+    println!("{}", solver19());
+}
+
+/// This one was a bit scrappy because I didn't want to spend a lot of time on validation
+/// or enums, even though those would be more proper. I'm quite fond of making custom
+/// iterators now since I can leverage all of the built-in iterator adapters like
+/// skip and take to elegantly calculate a solution. The custom iterator logic itself is
+/// a bit tedious but straight forward.
+fn solver19() -> usize {
+    let first_of_months = FirstOfMonth {
+        day: 1,
+        month: 0,
+        year: 1900,
+    };
+    first_of_months
+        // We start on 1900 since we know it starts on a Monday but we want to count
+        // from 1901
+        .skip(12)
+        .take(12 * 100)
+        .filter(|day| *day == 0)
+        .count()
+}
+
+struct FirstOfMonth {
+    day: u32,
+    month: u8,
+    year: u32,
+}
+
+impl Iterator for FirstOfMonth {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.day = (match self.month {
+            0 => 31,
+            1 => {
+                if self.year % 4 == 0 && self.year % 100 != 0 || self.year % 400 == 0 {
+                    29
+                } else {
+                    28
+                }
+            }
+            2 => 31,
+            3 => 30,
+            4 => 31,
+            5 => 30,
+            6 => 31,
+            7 => 31,
+            8 => 30,
+            9 => 31,
+            10 => 30,
+            11 => 31,
+            _ => panic!("Not a valid day"),
+        } + self.day)
+            % 7;
+
+        self.month = if self.month < 11 { self.month + 1 } else { 0 };
+        if self.month == 11 {
+            self.year += 1
+        };
+
+        Some(self.day)
+    }
 }
 
 /// Well they at least tipped us off this time that we'll be revisiting this problem
