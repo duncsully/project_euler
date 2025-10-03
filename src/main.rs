@@ -7,7 +7,44 @@ use std::{
 };
 
 fn main() {
-    println!("{}", solver16());
+    println!("{}", solver17());
+}
+
+/// This one was weird because it was a lot of manual enumeration. As a base, 1-19
+/// all are more or less special cases. 20-99 can be recursively checked adding the
+/// tens digit to the ones digit. Likewise with the hundreds except we also have to
+/// account for "and" if not on an exact hundreds number. Great use of Rust pattern
+/// matching, though! I ended up collapsing a bunch of ranges together for conciseness.
+fn solver17() -> u32 {
+    (1..=1000).map(letter_count).sum()
+}
+
+fn letter_count(n: u32) -> u32 {
+    match n {
+        0 => 0, // As one's digit for any multi-digit number
+        1..=2 => 3,
+        3 => 5,
+        4..=5 => 4,
+        6 => 3,
+        7..=8 => 5,
+        9 => 4,
+        10 => 3,
+        11..=12 => 6,
+        13..=14 => 8,
+        15..=16 => 7,
+        17 => 9,
+        18..=19 => 8,
+        20..=39 => 6 + letter_count(n % 10),
+        40..=69 => 5 + letter_count(n % 10),
+        70..=79 => 7 + letter_count(n % 10),
+        80..=99 => 6 + letter_count(n % 10),
+        100..=999 => {
+            let tens = letter_count(n % 100);
+            7 + letter_count(n / 100) + tens + if tens > 0 { 3 } else { 0 }
+        }
+        1000 => 11,
+        _ => panic!("Numbers higher than 1000 currently not supported"),
+    }
 }
 
 /// Good ol' integer overflows... Since the operation was simple, I basically made
@@ -571,5 +608,14 @@ mod tests {
             collatz_sequence(13).collect::<Vec<u64>>(),
             vec![40, 20, 10, 5, 16, 8, 4, 2, 1]
         )
+    }
+
+    #[test]
+    fn letter_counter_works() {
+        assert_eq!(letter_count(342), 23);
+        assert_eq!(letter_count(115), 20);
+        assert_eq!(letter_count(999), 24);
+        assert_eq!(letter_count(100), 10);
+        assert_eq!(letter_count(110), 16);
     }
 }
