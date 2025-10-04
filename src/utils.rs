@@ -39,3 +39,31 @@ impl MulAssign<u32> for BigInt {
         }
     }
 }
+
+pub trait Divisors {
+    fn divisors(&self) -> Vec<Self>
+    where
+        Self: Sized;
+    fn aliquot_sum(&self) -> Self
+    where
+        Self: Sized + std::ops::Add;
+}
+
+impl Divisors for u32 {
+    fn divisors(&self) -> Vec<u32> {
+        let mut divisors = vec![];
+        for n in 1..=self / 2 {
+            if self % n == 0 {
+                divisors.push(n);
+            }
+        }
+        divisors
+    }
+
+    fn aliquot_sum(&self) -> Self
+    where
+        Self: Sized + std::ops::Add,
+    {
+        self.divisors().iter().sum()
+    }
+}

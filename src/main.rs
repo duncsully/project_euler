@@ -2,7 +2,7 @@
 
 use std::{
     cmp::max,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     thread::{self, JoinHandle},
 };
@@ -10,7 +10,34 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver20());
+    println!("{}", solver21());
+}
+
+/// So the first 10 pairs are actually listed on Wikipedia...but I pretended
+/// not to see that and figured I'd calculate them myself, though I verified
+/// my answer based on the sum I got from the numbers on Wikipedia. It helped
+/// me catch a bug before submission where I was counting perfect numbers.
+/// The approach is pretty self-explanatory: for all integers between 2 and
+/// 10,000 check its aliquot sum and verify that it isn't itself, and then if
+/// the aliquot sum of its aliquot sum is itself, you have a pair of amicable
+/// numbers, so add them to the set. Since a pair of numbers is found each time
+/// we can skip the second one when we get to it. Then it's as easy as summing
+/// the set. Have I mentioned I love Rust's iterators? Oh, and I tried my hand
+/// at adding a custom trait.
+fn solver21() -> u32 {
+    (2..10_000u32)
+        .fold(HashSet::new(), |mut amicable_numbers, n| {
+            if !amicable_numbers.contains(&n) {
+                let contender = n.aliquot_sum();
+                if contender != n && contender.aliquot_sum() == n {
+                    amicable_numbers.insert(n);
+                    amicable_numbers.insert(contender);
+                }
+            }
+            amicable_numbers
+        })
+        .iter()
+        .sum()
 }
 
 /// Ugh, making us avoid overflows again, eh? Fine, you've broken me, I'll
