@@ -47,6 +47,8 @@ pub trait Divisors {
     fn aliquot_sum(&self) -> Self
     where
         Self: Sized + std::ops::Add;
+
+    fn is_abundant(&self) -> bool;
 }
 
 impl Divisors for u32 {
@@ -65,5 +67,9 @@ impl Divisors for u32 {
         Self: Sized + std::ops::Add,
     {
         self.divisors().iter().sum()
+    }
+
+    fn is_abundant(&self) -> bool {
+        self.divisors().iter().sum::<u32>() > *self
     }
 }

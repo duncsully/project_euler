@@ -10,7 +10,32 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver22());
+    println!("{}", solver23());
+}
+
+/// So this was silly. The first implementation used a vector instead of a hash set, which
+/// took a long but sufferable amount of time and it did produce the correct answer on the
+/// first try. I didn't know how else to optimize since I thought collecting all of the
+/// abundant numbers up front would help but had my eureka moment when I realized searching
+/// the vector was taking too long. I didn't need order necessarily. It was more important
+/// to check that a number was present in the set at all. This dramatically improved runtime.
+/// And Rust is amazing in that all I had to do was change the type declaration and everything
+/// just magically worked.
+fn solver23() -> u32 {
+    let abundant_numbers: HashSet<u32> = (12..=28111u32).filter(|n| n.is_abundant()).collect();
+
+    (1..24).sum::<u32>()
+        + (25..=28123u32).fold(0u32, |acc, n| {
+            if !abundant_numbers
+                .iter()
+                .filter(|&&abundant_number| abundant_number <= n / 2)
+                .any(|abundant_number| abundant_numbers.contains(&(n - abundant_number)))
+            {
+                acc + n
+            } else {
+                acc
+            }
+        })
 }
 
 /// This one was fairly straightforward with not much to talk about other than
