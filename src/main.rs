@@ -10,7 +10,26 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver21());
+    println!("{}", solver22());
+}
+
+/// This one was fairly straightforward with not much to talk about other than
+/// that TIL to get the ASCII value of a char...you just cast it to a u8.
+fn solver22() -> u32 {
+    let content = fs::read_to_string("inputs/0022_names.txt").expect("Unable to read input");
+
+    let cleaned_content = content.replace("\"", "");
+    let mut names: Vec<&str> = cleaned_content.split(",").collect();
+    names.sort_unstable();
+
+    names.iter().enumerate().fold(0, |mut total, (i, name)| {
+        total += name
+            .chars()
+            .map(|char| (char as u8 - 64) as u32)
+            .sum::<u32>()
+            * (i as u32 + 1);
+        total
+    })
 }
 
 /// So the first 10 pairs are actually listed on Wikipedia...but I pretended
