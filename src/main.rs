@@ -10,7 +10,32 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver23());
+    println!("{}", solver24());
+}
+
+/// This was a fun one with an obvious, albeit relatively insignificant optimization.
+/// I recall from combinatorics that the number of permutations of n items is just n!
+/// I also realized that n! < 1,000,000 so I would needlessly cycle through unless I
+/// calculated the number of iterations via a circular indexing calculation. After that
+/// it was just running the algorithm to find the next lexicographic permutation. I
+/// modify a vector in place to avoid allocating a new one for each iteration. It could
+/// probably be done with arrays but...ah well.
+fn solver24() -> String {
+    let permutation_count = factorial(10);
+    // Just like calculating the index of a circular array, we want to figure out how many
+    // iterations we need starting from the base case to get to the millionth permutation
+    // (which is 999_999 items after the base permutation)
+    let cycled_index = (999_999 % permutation_count + permutation_count) % permutation_count;
+
+    let mut ordering = vec![0u32, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    for _ in 0..cycled_index {
+        ordering.next_lexicographic_permutation();
+    }
+    ordering
+        .iter()
+        .map(|item| item.to_string())
+        .collect::<Vec<String>>()
+        .join("")
 }
 
 /// So this was silly. The first implementation used a vector instead of a hash set, which

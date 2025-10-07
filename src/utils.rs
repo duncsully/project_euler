@@ -73,3 +73,46 @@ impl Divisors for u32 {
         self.divisors().iter().sum::<u32>() > *self
     }
 }
+
+pub trait NextLexicographicPermutation {
+    fn next_lexicographic_permutation(&mut self) -> &Self;
+}
+
+impl NextLexicographicPermutation for Vec<u32> {
+    fn next_lexicographic_permutation(&mut self) -> &Self {
+        // Because we're using rev, need to manually return the desired index, not the iter position
+        if let Some(pivot) = self.iter().enumerate().rev().find_map(|(i, item)| {
+            if i != (self.len() - 1) && *item < self[i + 1] {
+                Some(i)
+            } else {
+                None
+            }
+        }) {
+            let swap_index = self
+                .iter()
+                .enumerate()
+                .rev()
+                // Likewise
+                .find_map(|(i, item)| if *item > self[pivot] { Some(i) } else { None })
+                .expect("Swap index not found");
+            self.swap(pivot, swap_index);
+            self[pivot + 1..].reverse();
+        } else {
+            self.reverse();
+        };
+        self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn next_lexicographic_permutation_works() {
+        assert_eq!(
+            *vec![1u32, 2, 3, 4].next_lexicographic_permutation(),
+            vec![1, 2, 4, 3]
+        )
+    }
+}
