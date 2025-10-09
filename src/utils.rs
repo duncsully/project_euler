@@ -1,27 +1,51 @@
-use std::ops::MulAssign;
+use std::ops::{AddAssign, MulAssign};
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct BigInt {
     digits: Vec<u8>,
 }
 
 impl BigInt {
-    fn new() -> BigInt {
+    pub fn new() -> BigInt {
         BigInt { digits: vec![0] }
     }
 
     pub fn digit_sum(&self) -> u32 {
         self.digits.iter().map(|digit| *digit as u32).sum()
     }
+
+    pub fn digit_count(&self) -> usize {
+        self.digits.len()
+    }
 }
 
-impl From<u8> for BigInt {
-    fn from(value: u8) -> Self {
+impl From<u32> for BigInt {
+    fn from(value: u32) -> Self {
         let mut digits = Vec::<u8>::new();
         let mut remainder = value;
         while remainder > 0 {
-            digits.push(remainder % 10);
+            digits.push((remainder % 10) as u8);
             remainder /= 10;
         }
         BigInt { digits }
+    }
+}
+
+impl AddAssign<BigInt> for BigInt {
+    fn add_assign(&mut self, rhs: BigInt) {
+        let mut carry = 0;
+        for i in 0..self.digits.len().max(rhs.digits.len()) {
+            let sum = self.digits.get(i).unwrap_or(&0) + rhs.digits.get(i).unwrap_or(&0) + carry;
+            carry = sum / 10;
+            if i < self.digits.len() {
+                self.digits[i] = sum % 10;
+            } else {
+                self.digits.push(sum % 10);
+            }
+        }
+        if carry > 0 {
+            self.digits.push(carry);
+        }
     }
 }
 
@@ -104,6 +128,32 @@ impl NextLexicographicPermutation for Vec<u32> {
     }
 }
 
+#[derive(Debug)]
+pub struct FibonacciSequence {
+    previous: BigInt,
+    current: BigInt,
+}
+
+impl FibonacciSequence {
+    pub fn new() -> FibonacciSequence {
+        FibonacciSequence {
+            previous: BigInt::from(0),
+            current: BigInt::from(1),
+        }
+    }
+}
+
+impl Iterator for FibonacciSequence {
+    type Item = BigInt;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let curr_copy = self.current.clone();
+        self.current += self.previous.to_owned();
+        self.previous = curr_copy;
+        Some(self.current.clone())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -114,5 +164,33 @@ mod tests {
             *vec![1u32, 2, 3, 4].next_lexicographic_permutation(),
             vec![1, 2, 4, 3]
         )
+    }
+
+    #[test]
+    fn big_ints_add_assign_works() {
+        let mut big_int = BigInt::from(29);
+        big_int += BigInt::from(13);
+        assert_eq!(big_int.digits, vec![2, 4]);
+        big_int += BigInt::from(100);
+        assert_eq!(big_int.digits, vec![2, 4, 1]);
+        big_int += BigInt::from(900);
+        assert_eq!(big_int.digits, vec![2, 4, 0, 1]);
+    }
+
+    #[test]
+    fn big_int_digit_count_works() {
+        let big_int = BigInt::from(12345);
+        assert_eq!(big_int.digit_count(), 5);
+    }
+
+    #[test]
+    fn fibonacci_sequence_iterates() {
+        let mut fib = FibonacciSequence::new();
+        assert_eq!(fib.next().unwrap(), BigInt::from(1));
+        assert_eq!(fib.next().unwrap(), BigInt::from(2));
+        assert_eq!(fib.next().unwrap(), BigInt::from(3));
+        assert_eq!(fib.next().unwrap(), BigInt::from(5));
+        assert_eq!(fib.next().unwrap(), BigInt::from(8));
+        assert_eq!(fib.next().unwrap(), BigInt::from(13));
     }
 }

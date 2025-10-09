@@ -10,7 +10,18 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver24());
+    println!("{}", solver25());
+}
+
+/// Euler Project or: How I learned to stop overflowing and love iteration.
+/// I'm just gonna end up fully implementing BigInt at this rate and turning
+/// anything I possibly can into an iterator. Not sure that this was the best
+/// approach but it worked out.
+fn solver25() -> usize {
+    FibonacciSequence::new()
+        .position(|big_int| big_int.digit_count() == 1000)
+        .unwrap()
+        + 2 // Technically the 0th iteration gives the 2nd term
 }
 
 /// This was a fun one with an obvious, albeit relatively insignificant optimization.
