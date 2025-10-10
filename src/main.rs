@@ -10,7 +10,47 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver25());
+    println!("{}", solver26());
+}
+
+/// This one was a doozy. I noticed that, long story short, primes seemed to be
+/// the numbers to focus on, and after a lot of research into reciprocals of primes
+/// and how to calculate the length of one's repetend (and that that's the name of
+/// of the repeating bits of a decimal) it was actually straight forward. I was
+/// struggling to understand the math so I had to breakdown and use an AI to help
+/// with the calculation portion. Also I was finally bothered to redo Primes as
+/// an iterator that hopefully will devolve less than my other implementation.
+fn solver26() -> u64 {
+    let primes = Primes::new();
+
+    primes
+        .take_while(|prime| *prime < 1000)
+        .max_by(|a, b| {
+            prime_repetend_length(*a)
+                .unwrap_or(0)
+                .cmp(&prime_repetend_length(*b).unwrap_or(0))
+        })
+        .expect("Max not found")
+}
+
+fn prime_repetend_length(p: u64) -> Option<u64> {
+    if p == 2 || p == 5 {
+        return Some(0); // These primes yield terminating decimals
+    }
+
+    let mut k = 1;
+    let mut mod_pow = 10 % p;
+
+    while mod_pow != 1 {
+        mod_pow = (mod_pow * 10) % p;
+        k += 1;
+
+        if k > p {
+            return None;
+        }
+    }
+
+    Some(k)
 }
 
 /// Euler Project or: How I learned to stop overflowing and love iteration.
@@ -671,6 +711,7 @@ fn solver4() -> u32 {
         .unwrap()
 }
 
+#[derive(Debug)]
 struct PrimeNumbers {
     cache: Vec<u64>,
 }

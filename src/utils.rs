@@ -154,6 +154,49 @@ impl Iterator for FibonacciSequence {
     }
 }
 
+pub struct Primes {
+    cache: Vec<u64>,
+}
+
+impl Primes {
+    pub fn new() -> Primes {
+        Primes {
+            cache: Vec::<u64>::new(),
+        }
+    }
+}
+
+impl Iterator for Primes {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next_prime = match self.cache.len() {
+            0 => 2,
+            1 => 3,
+            _ => {
+                let start = self.cache.last().expect("No cached primes") + 2;
+                (start..)
+                    .step_by(2)
+                    .find(|n| {
+                        let max_check = n.isqrt();
+                        let upper_index = self
+                            .cache
+                            .iter()
+                            .position(|prime| *prime > max_check)
+                            .unwrap_or(self.cache.len() - 1);
+                        self.cache[0..upper_index]
+                            .iter()
+                            .all(|prime| n % prime != 0)
+                    })
+                    .expect("Couldn't find next prime")
+            }
+        };
+
+        self.cache.push(next_prime);
+        Some(next_prime)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -192,5 +235,14 @@ mod tests {
         assert_eq!(fib.next().unwrap(), BigInt::from(5));
         assert_eq!(fib.next().unwrap(), BigInt::from(8));
         assert_eq!(fib.next().unwrap(), BigInt::from(13));
+    }
+
+    #[test]
+    fn primes_iterates() {
+        let primes = Primes::new();
+        assert_eq!(
+            primes.take(6).collect::<Vec<u64>>(),
+            vec![2, 3, 5, 7, 11, 13]
+        );
     }
 }
