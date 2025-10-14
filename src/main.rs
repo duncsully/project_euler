@@ -10,7 +10,39 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver26());
+    println!("{}", solver27());
+}
+
+/// OK, this one wasn't as bad as I thought it'd be. I wasn't sure exactly how to
+/// approach it, but I decided to just brute force check it. I had no real basis
+/// for deciding how many primes to load into the set (well, I suppose n = 80, a=999,
+/// and b = 1000 could've set the upper ceiling?) but after that it was just iterating
+/// through every combination of a and b and finding the position of the first nonprime
+/// number which in effect represented the length of consecutive primes, and tracking
+/// the max thus far.
+fn solver27() -> i32 {
+    let primes = Primes::new();
+    let prime_set: HashSet<u64> = primes.take(10_000).collect();
+    let mut max_consecutive_primes = 0;
+    let mut answer = 0;
+
+    for a in -999..=999 {
+        for b in -1000..=1000 {
+            let consecutive_primes = (0i32..)
+                .position(|n| {
+                    let y = n.pow(2) + a * n + b;
+                    0 >= y || !prime_set.contains(&(y as u64))
+                })
+                .expect("Didn't find nonprime");
+            if consecutive_primes > max_consecutive_primes {
+                max_consecutive_primes = consecutive_primes;
+                answer = a * b;
+            }
+        }
+    }
+
+    println!("Max consecutive primes: {max_consecutive_primes}");
+    answer
 }
 
 /// This one was a doozy. I noticed that, long story short, primes seemed to be
