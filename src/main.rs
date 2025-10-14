@@ -10,7 +10,27 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver29());
+    println!("{}", solver30());
+}
+
+/// I'm knocking these out relatively quick if I keep making lazy decisions.
+/// I didn't know a great way to find the upper ceiling so I did some trial
+/// and error to figure out when I stopped getting a larger answer... Otherwise
+/// it's another brute force solution that checks every number. Once again Rust
+/// makes inelegant solutions look and run more elegantly than they deserve.
+fn solver30() -> u32 {
+    (2..=1_000_000)
+        .filter(|n| {
+            let mut sum = 0;
+            let mut remainder = *n;
+            while remainder > 0 {
+                let term: u32 = remainder % 10;
+                sum += term.pow(5);
+                remainder /= 10;
+            }
+            sum == *n
+        })
+        .sum()
 }
 
 /// Another one that felt like it was going to be worse than it ended up being.
