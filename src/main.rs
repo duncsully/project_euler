@@ -10,7 +10,25 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver27());
+    println!("{}", solver28());
+}
+
+/// I finally did some mathematical analysis...well more like casual inference.
+/// I noticed that:
+/// 1. Each top-right corner seemed to be increasing by n*8
+/// 2. The other corners decreased by 2n each, in sum being 12n
+/// So I just looped over the amount of "rounds" doing this calculation. Come to
+/// think of it, I didn't think at the time to find any pattern in what the running
+/// sum looked like, if I could infer an n1 solution. Ah well, I'm happy enough with
+/// this solution.
+fn solver28() -> u32 {
+    let mut next = 1;
+    let mut sum = 1;
+    for n in 1..501u32 {
+        next = n * 8 + next;
+        sum += next * 4 - n * 12
+    }
+    sum
 }
 
 /// OK, this one wasn't as bad as I thought it'd be. I wasn't sure exactly how to
