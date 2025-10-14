@@ -1,6 +1,6 @@
 use std::ops::{AddAssign, MulAssign};
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Hash)]
 pub struct BigInt {
     digits: Vec<u8>,
 }
@@ -61,6 +61,31 @@ impl MulAssign<u32> for BigInt {
             self.digits.push((carry % 10) as u8);
             carry /= 10
         }
+    }
+}
+
+impl MulAssign<BigInt> for BigInt {
+    fn mul_assign(&mut self, rhs: BigInt) {
+        let mut result = BigInt::new();
+        for (i, &rhs_digit) in rhs.digits.iter().enumerate() {
+            let mut temp = self.clone();
+            temp *= rhs_digit as u32;
+            for _ in 0..i {
+                temp.digits.insert(0, 0);
+            }
+            result += temp;
+        }
+        *self = result;
+    }
+}
+
+impl ToString for BigInt {
+    fn to_string(&self) -> String {
+        self.digits
+            .iter()
+            .rev()
+            .map(|digit| digit.to_string())
+            .collect()
     }
 }
 
@@ -221,9 +246,26 @@ mod tests {
     }
 
     #[test]
+    fn big_ints_mul_assign_big_int_works() {
+        let mut big_int = BigInt::from(29);
+        big_int *= BigInt::from(13);
+        assert_eq!(big_int.digits, vec![7, 7, 3]);
+        big_int *= BigInt::from(100);
+        assert_eq!(big_int.digits, vec![0, 0, 7, 7, 3]);
+        big_int *= BigInt::from(9);
+        assert_eq!(big_int.digits, vec![0, 0, 3, 9, 3, 3]);
+    }
+
+    #[test]
     fn big_int_digit_count_works() {
         let big_int = BigInt::from(12345);
         assert_eq!(big_int.digit_count(), 5);
+    }
+
+    #[test]
+    fn big_int_to_string_works() {
+        let big_int = BigInt::from(12345);
+        assert_eq!(big_int.to_string(), "12345");
     }
 
     #[test]

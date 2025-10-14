@@ -10,7 +10,26 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver28());
+    println!("{}", solver29());
+}
+
+/// Another one that felt like it was going to be worse than it ended up being.
+/// Also another that I just brute forced. I prematurely implemented MulAssign
+/// between BigInts but realized I didn't need it and could just stick with
+/// u32 MulAssign. I did decide that having a ToString impl was worthwhile and
+/// used that for the hash set. The one maybe optimization was realizing I could
+/// just keep multiplying the same BigInt instance. I'm sure there are other
+/// mathgic optimizations.
+fn solver29() -> usize {
+    let mut terms: HashSet<String> = HashSet::new();
+    for a in 2..=100 {
+        let mut term = BigInt::from(a);
+        for _ in 2..=100 {
+            term *= a;
+            terms.insert(term.to_string());
+        }
+    }
+    terms.len()
 }
 
 /// I finally did some mathematical analysis...well more like casual inference.
