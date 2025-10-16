@@ -10,7 +10,30 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver30());
+    println!("{}", solver31());
+}
+
+/// Not gonna lie, this one was mostly looking up example code. I had the
+/// general idea that this seemed like a recursive and/or DP approachable
+/// problem because the amount of ways of representing some larger amount
+/// depends on the ways to represent a smaller amount, but then I got hung
+/// up on how to find distinct combinations and not just permutations, so
+/// that's when I needed to look it up.
+fn solver31() -> u32 {
+    let coins = [1, 2, 5, 10, 20, 50, 100, 200];
+
+    coin_combination_count(&coins, 200)
+}
+
+fn coin_combination_count(coins: &[u32], amount: u32) -> u32 {
+    let mut ways = vec![0; (amount + 1) as usize];
+    ways[0] = 1;
+
+    coins.iter().for_each(|coin| {
+        (*coin..=amount).for_each(|i| ways[i as usize] += ways[(i - coin) as usize]);
+    });
+
+    ways[amount as usize]
 }
 
 /// I'm knocking these out relatively quick if I keep making lazy decisions.
