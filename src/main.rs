@@ -10,7 +10,32 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver31());
+    println!("{}", solver32());
+}
+
+/// This was a case of borrowing someone else's homework and modifying it at little
+/// just to try different techniques out. It's definitely another brute force approach
+/// that could be optimized in several ways. Honestly this one just did not pique my
+/// interest as much as others.
+fn solver32() -> u32 {
+    let mut products: HashSet<u32> = HashSet::new();
+    let pandigital_set = (1..=9)
+        .map(|n| char::from_digit(n, 10).unwrap())
+        .collect::<HashSet<char>>();
+    for multiplicand in 1..=99u32 {
+        for multiplier in 1..=9999u32 / multiplicand {
+            let product = multiplicand * multiplier;
+            let mut char_set: HashSet<char> = HashSet::new();
+            char_set.extend(multiplicand.to_string().chars());
+            char_set.extend(multiplier.to_string().chars());
+            char_set.extend(product.to_string().chars());
+
+            if char_set == pandigital_set {
+                products.insert(product);
+            }
+        }
+    }
+    products.iter().sum()
 }
 
 /// Not gonna lie, this one was mostly looking up example code. I had the
