@@ -10,7 +10,56 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver32());
+    println!("{}", solver33());
+}
+
+/// Ick, I started this one before vacation and came back to it luckily with instruction
+/// from my past self on what I had left to do. This one was messy and not very "fun" to
+/// solve but I got there in the end. I was afraid I'd be stuck on this one for a while
+/// given the answer and how wrong it seemed, but hark, the answer 'twas!
+fn solver33() -> u64 {
+    let mut numerators = vec![49u64];
+    let mut denominators = vec![98u64];
+    for numerator in 10..=99 {
+        let tens_digit = numerator % 10;
+        let tens_add = tens_digit * 10;
+        for denominator in (1..=9)
+            .map(|n| n + tens_add)
+            .filter(|denom| *denom > numerator)
+        {
+            let other_numerator = numerator / 10;
+            let other_denominator = denominator % 10;
+            let numerators_are_divisible = numerator % other_numerator == 0;
+            let denominators_are_divisible = denominator % other_denominator == 0;
+            let numerator_factor = numerator / other_numerator;
+            let denominator_factor = denominator / other_denominator;
+            let same_factor = numerator_factor == denominator_factor;
+
+            if numerators_are_divisible && denominators_are_divisible && same_factor {
+                numerators.push(numerator);
+                denominators.push(denominator);
+                println!("{numerator} / {denominator}")
+            }
+        }
+    }
+    let mut final_numerator: u64 = numerators.iter().product();
+    let mut final_denominator: u64 = denominators.iter().product();
+
+    let mut primes = Primes::new();
+    let mut next_prime = primes.next().unwrap();
+    loop {
+        if next_prime > final_numerator {
+            break;
+        }
+        if final_numerator % next_prime != 0 || final_denominator % next_prime != 0 {
+            next_prime = primes.next().unwrap();
+        } else {
+            final_numerator /= next_prime;
+            final_denominator /= next_prime;
+        }
+    }
+    println!("{final_numerator}");
+    final_denominator
 }
 
 /// This was a case of borrowing someone else's homework and modifying it at little
