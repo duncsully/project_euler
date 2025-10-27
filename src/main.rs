@@ -10,7 +10,24 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver35());
+    println!("{}", solver36());
+}
+
+/// This was a short and sweet one thanks to Rust's iterators once again.
+fn solver36() -> u32 {
+    (1..1_000_000)
+        .filter(|n| {
+            let str = n.to_string();
+            let rev: String = str.chars().rev().collect();
+            if str != rev {
+                return false;
+            };
+            let bin = format!("{:b}", *n);
+            let rev_bin: String = bin.chars().rev().collect();
+
+            bin == rev_bin
+        })
+        .sum()
 }
 
 /// Woo! Another one I got right on the first try. This ended up being a little
