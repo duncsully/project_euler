@@ -10,7 +10,40 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver33());
+    println!("{}", solver34());
+}
+
+/// Needed a little help from AI to figure out how to calculate a ceiling but it
+/// was smooth sailing from there otherwise. The obvious optimization to make at
+/// first was to cache all of the factorials of the digits. Other that that, I
+/// took a fairly brute force approach (what else is new?).
+fn solver34() -> u32 {
+    // Cache all digit factorials
+    let mut factorials = [1u32; 10];
+    for i in 2..factorials.len() {
+        factorials[i] = factorials[i - 1] * i as u32;
+    }
+    // Some d digit number can only possibly work if its minimum value is less
+    // than the maximum possible sum (i.e. d * 9!). Find the max digits that
+    // could possibly work.
+    let digit_ceiling = (1..)
+        .find(|d| d * factorials[9] < 10u32.pow(d - 1))
+        .expect("Did not find ceiling");
+    let ceiling = 10u32.pow(digit_ceiling - 1) - 1;
+
+    // No single digit number will work, and the calculated ceiling is the
+    // highest possible number that could work.
+    (10..=ceiling)
+        .filter(|n| {
+            let mut remainder = *n;
+            let mut sum = 0;
+            while remainder > 0 {
+                sum += factorials[(remainder % 10) as usize];
+                remainder /= 10;
+            }
+            sum == *n
+        })
+        .sum()
 }
 
 /// Ick, I started this one before vacation and came back to it luckily with instruction
