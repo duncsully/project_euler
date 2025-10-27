@@ -10,7 +10,43 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver34());
+    println!("{}", solver35());
+}
+
+/// Woo! Another one I got right on the first try. This ended up being a little
+/// messier and suboptimal than I would've liked. The thing about circular primes
+/// is they exist in groups of up to the number of digits, and so if I validate that one
+/// three-digit prime is circular, then I've technically validated that up to three
+/// primes are circular. The trick is that for a number like, say, 1717 (which isn't
+/// prime, but for illustrative purposes), it technically only has two numbers in its
+/// rotation before repeating. And so unless I also kept track of that somehow I
+/// couldn't as easily optimize like I wanted. Oh well, it ran plenty quickly.
+fn solver35() -> u32 {
+    let primes = Primes::new();
+    let primes_to_million: HashSet<u64> = primes.take_while(|p| *p < 1_000_000).collect();
+    let mut total = 0;
+
+    'outer: for prime in primes_to_million.iter() {
+        // Store the digits in a vector for easier manipulation
+        let mut digits: Vec<u64> = Vec::new();
+        let mut remainder = *prime;
+        while remainder > 0 {
+            digits.push(remainder % 10);
+            remainder /= 10;
+        }
+        // For a prime of d digits, there are d - 1 other possible primes in its circle
+        for _ in 0..digits.len() {
+            digits.rotate_left(1);
+            // Build the next possible circular prime
+            let contender = digits.iter().rev().fold(0, |acc, digit| acc * 10 + digit);
+            // No need to check the remaining, let's move to the next prime
+            if !primes_to_million.contains(&contender) {
+                continue 'outer;
+            }
+        }
+        total += 1;
+    }
+    total
 }
 
 /// Needed a little help from AI to figure out how to calculate a ceiling but it
