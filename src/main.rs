@@ -10,7 +10,49 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver36());
+    println!("{}", solver37());
+}
+
+/// This one was interesting in that it went through a few iterations to arrive
+/// at an implementation I was finally happy with. An important optimization I
+/// realized along the way was this seemed like another classic case for DP. Every
+/// later prime would have to end with one of the single digit primes. So I could
+/// simply do the left and right truncations on a prime and check if that truncation
+/// was already in either set to put the prime into it. Since I was iterating toward
+/// larger primes, I was guaranteed to have any previous truncatable primes cached
+/// already and would only need to check one left and right truncation. And once
+/// again Rust's iterators made what was originally a scrappy while loop in a prev
+/// implementation much more elegant.
+fn solver37() -> u64 {
+    let primes = Primes::new();
+    let mut rtl_trunctable_primes = HashSet::<u64>::new();
+    let mut ltr_trunctable_primes = HashSet::<u64>::new();
+
+    primes
+        .filter(|&prime| {
+            if prime < 10 {
+                rtl_trunctable_primes.insert(prime);
+                ltr_trunctable_primes.insert(prime);
+                return false;
+            }
+
+            // Right to left truncation
+            let rtl_truncated = prime / 10;
+            if rtl_trunctable_primes.contains(&rtl_truncated) {
+                rtl_trunctable_primes.insert(prime);
+            }
+
+            // Left to right truncation
+            let position = 10u64.pow((prime as f64).log10().floor() as u32);
+            let ltr_truncated = prime % position;
+            if ltr_trunctable_primes.contains(&ltr_truncated) {
+                ltr_trunctable_primes.insert(prime);
+            }
+
+            ltr_trunctable_primes.contains(&prime) && rtl_trunctable_primes.contains(&prime)
+        })
+        .take(11)
+        .sum()
 }
 
 /// This was a short and sweet one thanks to Rust's iterators once again.
