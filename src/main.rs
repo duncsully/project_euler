@@ -10,7 +10,56 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver37());
+    println!("{}", solver38());
+}
+
+/// The funny thing is that I figured out to only check 4 digit numbers, started coming up
+/// with a solver, made one little mistake that got me the almost right answer, and so I continued
+/// working through a deduction of how to find the right answer which became a second solution in
+/// its own right without any code necessary. But I fixed up the code so I'll include it anyway.
+/// Ironically despite my stubbornness against pulling in crates I still resorted to AI to help create
+/// an iterator for permutations because that was an entirely separate sub problem I just didn't have
+/// the interest in solving currently even though I created BigInt to solve other problems.
+///
+/// Observations:
+/// - Needs to start with 9, and you'll always get an 1 and 8 on double, i.e. an added digit
+/// - Two digits doesn't work because then you'd have 2 + 3 + 3 + (>2) > 9
+/// - Three digits doesn't work because you'd have 3 + 4 + (>2) > 9
+/// - Logically it would have to be 4 digits because 4 + 5 = 9
+/// - So this leaves 2, 3, 4, 5, 6, 7
+/// - Second digit needs to be <5 or else you get another 9
+/// - Can't use 4 because that'll double to 8
+/// - Second digit must be either 2 or 3
+/// - 2 also needs to show up because we're getting 1 from doubling 9
+/// - 3, 5, 7 are odd numbers that we wouldn't normally get through doubling:
+///     - We don't have room for all of them
+///     - 5 could be created by 2 preceding 7 to make 54
+///       - This also sorts 2 showing up but not conflicting with 7 doubling
+/// - That means that we must end up with a number such as 9273 or 9327
+/// - We can quickly check both options to verify the answer
+fn solver38() -> String {
+    let digits = [9u32, 8, 7, 6, 5, 4, 3, 2, 1];
+
+    for permutation in permutations(&digits, 4) {
+        let mut remaining: Vec<u32> = digits
+            .iter()
+            .filter(|&n| !permutation.contains(n))
+            .map(|&n| n)
+            .collect();
+        remaining.sort();
+        let remaining_sorted_str: String = remaining.iter().map(|&n| n.to_string()).collect();
+
+        let combo_nbr = permutation.iter().fold(0, |acc, &n| acc * 10 + n);
+        let double = combo_nbr * 2;
+        let mut double_chars: Vec<char> = double.to_string().chars().collect();
+        double_chars.sort();
+        let double_sorted_str: String = double_chars.iter().collect();
+
+        if remaining_sorted_str == double_sorted_str {
+            return format!("{combo_nbr}{double}");
+        }
+    }
+    panic!("Did not find answer")
 }
 
 /// This one was interesting in that it went through a few iterations to arrive
