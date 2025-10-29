@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::ops::{AddAssign, MulAssign};
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Hash)]
@@ -153,6 +154,56 @@ impl NextLexicographicPermutation for Vec<u32> {
     }
 }
 
+// AI generated code start
+pub struct Permutations<'a, T> {
+    slice: &'a [T],
+    n: usize,
+    indices: Option<Vec<usize>>,
+    used: Option<Vec<bool>>,
+    stack: VecDeque<Vec<usize>>,
+}
+
+impl<'a, T> Permutations<'a, T> {
+    pub fn new(slice: &'a [T], n: usize) -> Self {
+        let mut stack = VecDeque::new();
+        if n > 0 && n <= slice.len() {
+            stack.push_back(Vec::new());
+        }
+        Permutations {
+            slice,
+            n,
+            indices: None,
+            used: None,
+            stack,
+        }
+    }
+}
+
+impl<'a, T: Clone> Iterator for Permutations<'a, T> {
+    type Item = Vec<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(prefix) = self.stack.pop_front() {
+            if prefix.len() == self.n {
+                return Some(prefix.iter().map(|&i| self.slice[i].clone()).collect());
+            }
+            for i in 0..self.slice.len() {
+                if !prefix.contains(&i) {
+                    let mut new_prefix = prefix.clone();
+                    new_prefix.push(i);
+                    self.stack.push_back(new_prefix);
+                }
+            }
+        }
+        None
+    }
+}
+
+pub fn permutations<T>(slice: &[T], n: usize) -> Permutations<'_, T> {
+    Permutations::new(slice, n)
+}
+// AI generated code end
+
 #[derive(Debug)]
 pub struct FibonacciSequence {
     previous: BigInt,
@@ -286,5 +337,50 @@ mod tests {
             primes.take(6).collect::<Vec<u64>>(),
             vec![2, 3, 5, 7, 11, 13]
         );
+    }
+
+    #[test]
+    fn permutations_iterator_works() {
+        let v = vec![1, 2, 3, 4];
+        let perms: Vec<Vec<_>> = permutations(&v, 2).collect();
+        let mut expected = vec![
+            vec![1, 2],
+            vec![1, 3],
+            vec![1, 4],
+            vec![2, 1],
+            vec![2, 3],
+            vec![2, 4],
+            vec![3, 1],
+            vec![3, 2],
+            vec![3, 4],
+            vec![4, 1],
+            vec![4, 2],
+            vec![4, 3],
+        ];
+        expected.sort();
+        let mut perms_sorted = perms.clone();
+        perms_sorted.sort();
+        assert_eq!(perms_sorted, expected);
+    }
+
+    #[test]
+    fn permutations_empty_and_n_too_large() {
+        let v: Vec<u32> = vec![];
+        let perms: Vec<Vec<_>> = permutations(&v, 2).collect();
+        assert_eq!(perms, Vec::<Vec<u32>>::new());
+        let v = vec![1, 2];
+        let perms: Vec<Vec<_>> = permutations(&v, 3).collect();
+        assert_eq!(perms, Vec::<Vec<u32>>::new());
+    }
+
+    #[test]
+    fn permutations_n_equals_1() {
+        let v = vec![1, 2, 3];
+        let perms: Vec<Vec<_>> = permutations(&v, 1).collect();
+        let mut expected = vec![vec![1], vec![2], vec![3]];
+        expected.sort();
+        let mut perms_sorted = perms.clone();
+        perms_sorted.sort();
+        assert_eq!(perms_sorted, expected);
     }
 }
