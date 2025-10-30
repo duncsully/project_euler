@@ -10,7 +10,50 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver38());
+    println!("{}", solver39());
+}
+
+/// I'm not sure if this is the best approach but I ended up finding a method
+/// for generating Pythagorean triples and then just iterating every combination
+/// of values that didn't break a perimeter of 1000, tracking the perimeter counts
+/// in a hash map. I'm not sure if my loops are as elegant as they could be but
+/// they got the job done.
+fn solver39() -> u64 {
+    let mut perimeter_counts: HashMap<u64, u32> = HashMap::new();
+    'outer: for n in 1.. {
+        'inner: for m in n + 1.. {
+            if n % 2 == m % 2 || gcd(n, m) != 1 {
+                continue;
+            }
+            // Euclid's formula, which generates primitive pythagorean triples
+            let base_p = (m.pow(2) - n.pow(2)) + 2 * m * n + (m.pow(2) + n.pow(2));
+            let mut p = 0;
+            // Check every multiple of the primitive until breaking 1,000
+            for k in 1.. {
+                p += base_p;
+                if p <= 1_000 {
+                    perimeter_counts
+                        .entry(p)
+                        .and_modify(|count| *count += 1)
+                        .or_insert(1);
+                } else if k > 1 {
+                    // Try next m, resetting k
+                    break;
+                } else if m > n + 1 {
+                    // Try next n, resetting m
+                    break 'inner;
+                } else {
+                    // Done
+                    break 'outer;
+                }
+            }
+        }
+    }
+    *perimeter_counts
+        .iter()
+        .max_by_key(|(_, count)| *count)
+        .expect("Max not found")
+        .0
 }
 
 /// The funny thing is that I figured out to only check 4 digit numbers, started coming up
