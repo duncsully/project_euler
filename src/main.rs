@@ -10,7 +10,29 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver39());
+    println!("{}", solver40());
+}
+
+/// I feel like there was a more clever way to solve this but I decided to just brute force it
+/// anyway. Not at all a problem for modern hardware.
+fn solver40() -> u32 {
+    let mut silly_string = String::with_capacity(1_000_000);
+    let mut n = 1;
+    while silly_string.len() < 1_000_000 {
+        silly_string.push_str(&n.to_string());
+        n += 1;
+    }
+    [1usize, 10, 100, 1000, 10000, 100000, 1000000]
+        .map(|n| {
+            silly_string
+                .chars()
+                .nth(n - 1)
+                .unwrap()
+                .to_digit(10)
+                .unwrap()
+        })
+        .iter()
+        .product()
 }
 
 /// I'm not sure if this is the best approach but I ended up finding a method
