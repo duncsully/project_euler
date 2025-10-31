@@ -1,5 +1,5 @@
 use std::cmp::min;
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::mem::swap;
 use std::ops::{AddAssign, MulAssign};
 
@@ -90,6 +90,23 @@ impl ToString for BigInt {
             .map(|digit| digit.to_string())
             .collect()
     }
+}
+
+pub fn try_digits_to_u64(digits: &[u8]) -> Result<u64, &'static str> {
+    if digits.iter().all(|&n| n < 10) {
+        Ok(digits_to_u64(digits))
+    } else {
+        Err("Values must be < 10")
+    }
+}
+
+/// Turns a slice representing a series of digits into a u64.
+///
+/// Note: Will treat numbers > 9 as having a "carry over" into
+/// the next digit. If you want to check that all digits are
+/// < 10 use try_digits_to_u64
+pub fn digits_to_u64(digits: &[u8]) -> u64 {
+    digits.iter().fold(0, |acc, &d| acc * 10 + d as u64)
 }
 
 pub trait Divisors {
@@ -275,6 +292,29 @@ impl Iterator for Primes {
     }
 }
 
+pub trait IsPrime {
+    fn is_prime(&self) -> bool;
+}
+
+// TODO: Make this more efficient by caching a list of primes?
+impl IsPrime for u64 {
+    fn is_prime(&self) -> bool {
+        // Very rudimentary check
+        if *self < 3 {
+            return false;
+        }
+        if self % 2 == 0 {
+            return false;
+        }
+        for odd in (3..=self.isqrt()).step_by(2) {
+            if self % odd == 0 {
+                return false;
+            }
+        }
+        true
+    }
+}
+
 // From Wikipedia (is that better than AI? Either way, yes, the laziness is setting in)
 pub fn gcd(mut u: u64, mut v: u64) -> u64 {
     // Base cases: gcd(n, 0) = gcd(0, n) = n
@@ -316,6 +356,25 @@ pub fn gcd(mut u: u64, mut v: u64) -> u64 {
         // Identity 3: gcd(u, 2ʲ v) = gcd(u, v) as u is odd
         v >>= v.trailing_zeros();
     }
+}
+
+pub fn digits<T: ToString>(n: T) -> Vec<u32> {
+    n.to_string()
+        .chars()
+        .map(|char| char.to_digit(10).expect("Not a digit"))
+        .collect()
+}
+
+pub fn is_pandigital(n: &u64) -> bool {
+    let digits_vec = digits(n).into_iter().map(|digit| digit as u64);
+    let n_len = digits_vec.len();
+    let digits_set: HashSet<u64> = HashSet::from_iter(digits_vec);
+    if n_len != digits_set.len() {
+        return false;
+    }
+    let range_set = HashSet::from_iter(1..=n_len as u64);
+
+    digits_set == range_set
 }
 
 #[cfg(test)]
@@ -427,5 +486,29 @@ mod tests {
         let mut perms_sorted = perms.clone();
         perms_sorted.sort();
         assert_eq!(perms_sorted, expected);
+    }
+
+    #[test]
+    fn digits_to_u64_works() {
+        assert_eq!(digits_to_u64(&[1, 2, 3]), 123);
+        assert_eq!(digits_to_u64(&[1, 12, 3]), 223);
+    }
+
+    #[test]
+    fn is_pandigital_works() {
+        assert!(is_pandigital(&1423));
+        assert!(is_pandigital(&624531));
+        assert!(!is_pandigital(&134));
+    }
+
+    #[test]
+    fn is_prime_works() {
+        assert!(!1u64.is_prime());
+        assert!(!2u64.is_prime());
+        assert!(3u64.is_prime());
+        assert!(!4u64.is_prime());
+        assert!(5u64.is_prime());
+        assert!(17u64.is_prime());
+        assert!(!63u64.is_prime());
     }
 }
