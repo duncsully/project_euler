@@ -10,7 +10,34 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver40());
+    println!("{}", solver41());
+}
+
+/// Oi vey! I was a bit all over with this one trying to decide what utils would make this
+/// easy without the utils themselves becoming too much of a burden. My first attempt figured
+/// I could just iterate through all of the primes less than 10^10 and then look in reverse
+/// for the first that passed is_pandigital...until I realized that 10,000,000,000 is quite
+/// a large number.
+///
+/// So then I came from the other direction. Luckily I had just added utils for iterating
+/// permutations, but this meant that instead I'd need a utility for testing primality, and
+/// trying to do so efficiently was going to take up way too much of my time so I settled for
+/// an inefficient but good enough checker. I also decided to make a quick util to convert
+/// digits to u64s since I figured I'd probably be doing this again in future problems. Maybe
+/// it'll become a struct eventually.
+fn solver41() -> u64 {
+    let digits = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+    (0..9)
+        .find_map(|d| {
+            Permutations::new(&digits[d..], 9 - d).find_map(|p| {
+                let num = digits_to_u64(&p);
+                if num.is_prime() {
+                    return Some(num);
+                }
+                None
+            })
+        })
+        .expect("Didn't find pandigital prime")
 }
 
 /// I feel like there was a more clever way to solve this but I decided to just brute force it
