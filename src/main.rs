@@ -3,14 +3,47 @@
 use std::{
     cmp::max,
     collections::{HashMap, HashSet},
-    fs,
+    fs, iter,
     thread::{self, JoinHandle},
 };
 mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver41());
+    println!("{}", solver42());
+}
+
+/// This one was a nice break. Very straightforward. I calculated an arbitrary number
+/// of triangle numbers since I wasn't sure what the largest word would be, doing so
+/// additively and storing in a hash for quick reference. After that it was just a
+/// matter of parsing the text file and liberal use of iterators.
+fn solver42() -> usize {
+    let mut triangle_num = 0;
+    let mut index = 1;
+    let triangle_nums = HashSet::<u32>::from_iter(
+        iter::from_fn(move || {
+            triangle_num += index;
+            index += 1;
+            Some(triangle_num)
+        })
+        .take(100),
+    );
+
+    let content = fs::read_to_string("inputs/problem42.txt")
+        .expect("Unable to read input")
+        .replace("\"", "");
+    let strings = content.split(',');
+
+    let ascii_offset = 64;
+    strings
+        .map(|string| {
+            string
+                .chars()
+                .map(|char| (char as u32) - ascii_offset)
+                .sum()
+        })
+        .filter(|n| triangle_nums.contains(n))
+        .count()
 }
 
 /// Oi vey! I was a bit all over with this one trying to decide what utils would make this
