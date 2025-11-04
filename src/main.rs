@@ -10,7 +10,25 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver42());
+    println!("{}", solver43());
+}
+
+/// Was feeling lazy with this one and decided to brute force it, which was relatively
+/// simple with the utilities I already created for permuting and converting slices
+/// representing digits. Still took a moment to calculate. Some obvious optimizations
+/// would be to use division rules to avoid converting whole digit slices. If I had
+/// more patience I might've used an approach where I found multiples of the primes
+/// with three unique digits and then tried to combine them.
+fn solver43() -> u64 {
+    permutations(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 10)
+        .filter(|digits| {
+            let primes = [2, 3, 5, 7, 11, 13, 17];
+            primes
+                .iter()
+                .enumerate()
+                .all(|(i, prime)| digits_to_u64(&digits[1 + i..=3 + i]) % prime == 0)
+        })
+        .fold(0, |sum, digits| sum + digits_to_u64(&digits))
 }
 
 /// This one was a nice break. Very straightforward. I calculated an arbitrary number
