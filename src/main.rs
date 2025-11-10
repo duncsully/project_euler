@@ -10,7 +10,41 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver43());
+    println!("{}", solver44());
+}
+
+/// It's amazing what a difference using a set vs a vector does for search speeds. I suppose
+/// I could've also used a binary search since the vectors should be sorted. Once again I
+/// didn't have any mathematical basis for the number of numbers I generated. The approach
+/// was otherwise a fairly standard brute force iteration through all of the pairs of the
+/// arbitrary amount generated.
+fn solver44() -> u32 {
+    let mut add = 1;
+    let mut pentagonal_num = 0;
+    let pentagonal_nums: Vec<u32> = iter::from_fn(move || {
+        pentagonal_num += add;
+        add += 3;
+        Some(pentagonal_num)
+    })
+    .take(5000)
+    .collect();
+    let pentagonal_nums_set = HashSet::<&u32>::from_iter(pentagonal_nums.iter());
+
+    let mut min: Option<u32> = None;
+    for i in 0..pentagonal_nums.len() {
+        for k in i + 1..pentagonal_nums.len() {
+            let n1 = pentagonal_nums[i];
+            let n2 = pentagonal_nums[k];
+            let diff = n1.abs_diff(n2);
+
+            if pentagonal_nums_set.contains(&(n1 + n2)) && pentagonal_nums_set.contains(&diff) {
+                min = min
+                    .and_then(|old_min| Some(old_min.min(diff)))
+                    .or(Some(diff))
+            }
+        }
+    }
+    min.expect("Didn't find a pair")
 }
 
 /// Was feeling lazy with this one and decided to brute force it, which was relatively
