@@ -10,7 +10,48 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver44());
+    println!("{}", solver45());
+}
+
+/// So really this is only needing to check for the next pentagonal and hexagonal number
+/// since all hexagonal numbers are triangular. I realize that there is a purely mathematical
+/// solution that starts with setting the formulas equal to each other to find a set of solutions
+/// to that equation, but my math isn't that strong anymore.
+///
+/// So brute force once again! I slightly optimized this (I think?) by iterating each series
+/// only as needed until they both match. Parallelization might've been possible too but I
+/// didn't feel like diving into a shared mutable value quite yet.
+fn solver45() -> u32 {
+    // Set up iterators and skip until past 40755
+    let mut pent_add = 1;
+    let mut pentagonal_num = 0;
+    let mut pentagonal_nums = iter::from_fn(move || {
+        pentagonal_num += pent_add;
+        pent_add += 3;
+        Some(pentagonal_num)
+    })
+    .skip(165);
+
+    let mut hex_add = 1;
+    let mut hexagonal_num = 0;
+    let mut hexagonal_nums = iter::from_fn(move || {
+        hexagonal_num += hex_add;
+        hex_add += 4;
+        Some(hexagonal_num)
+    })
+    .skip(143);
+
+    let mut p = pentagonal_nums.next().unwrap();
+    let mut h = hexagonal_nums.next().unwrap();
+    while p != h {
+        if p < h {
+            p = pentagonal_nums.next().unwrap();
+        } else {
+            h = hexagonal_nums.next().unwrap();
+        }
+    }
+
+    p
 }
 
 /// It's amazing what a difference using a set vs a vector does for search speeds. I suppose
