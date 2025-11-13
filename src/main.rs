@@ -10,7 +10,28 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver45());
+    println!("{}", solver46());
+}
+
+/// I was expecting this one to be a lot worse than it actually was. This time Rust iterators
+/// not only were handy for code's sake but for literally thinking through the problem iteratively.
+/// I realized it'd be easier to keep track of a list of doubled squares and then simply check that
+/// the differences for all of them are not prime.
+fn solver46() -> u32 {
+    let mut twice_squares = vec![2, 8, 18, 32];
+    (35u32..)
+        .step_by(2)
+        .filter(|n| !n.is_prime())
+        .find(|n| {
+            if n > twice_squares.last().unwrap() {
+                twice_squares.push((twice_squares.len().pow(2) * 2) as u32)
+            }
+            twice_squares
+                .iter()
+                .filter(|twice_square| *twice_square < n)
+                .all(|twice_square| !(n - twice_square).is_prime())
+        })
+        .expect("Didn't find number")
 }
 
 /// So really this is only needing to check for the next pentagonal and hexagonal number

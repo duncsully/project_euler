@@ -296,6 +296,24 @@ pub trait IsPrime {
     fn is_prime(&self) -> bool;
 }
 
+impl IsPrime for u32 {
+    fn is_prime(&self) -> bool {
+        // Very rudimentary check
+        if *self < 3 {
+            return false;
+        }
+        if self % 2 == 0 {
+            return false;
+        }
+        for odd in (3..=self.isqrt()).step_by(2) {
+            if self % odd == 0 {
+                return false;
+            }
+        }
+        true
+    }
+}
+
 // TODO: Make this more efficient by caching a list of primes?
 impl IsPrime for u64 {
     fn is_prime(&self) -> bool {
