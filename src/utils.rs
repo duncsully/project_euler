@@ -259,6 +259,32 @@ impl Primes {
             cache: Vec::<u64>::new(),
         }
     }
+    // Possible performance improvement: hash of numbers to factors
+    pub fn distinct_factors(&mut self, n: u64) -> HashSet<u64> {
+        // 1 isn't prime
+        if n == 1 {
+            return HashSet::new();
+        }
+        // By definition, a prime's only prime factor is itself
+        if self.cache.binary_search(&n).is_ok() {
+            return HashSet::from([n]);
+        }
+        let max = n.isqrt();
+        // Make sure cache is filled at least to largest possible factor
+        while *self.cache.last().unwrap_or(&0) < max {
+            self.next();
+        }
+        if let Some(factor) = self
+            .cache
+            .iter()
+            .filter(|prime| **prime <= n)
+            .find_map(|prime| if n % prime == 0 { Some(prime) } else { None })
+        {
+            &HashSet::from([*factor]) | &self.distinct_factors(n / factor)
+        } else {
+            HashSet::from([n])
+        }
+    }
 }
 
 impl Iterator for Primes {
@@ -528,5 +554,16 @@ mod tests {
         assert!(5u64.is_prime());
         assert!(17u64.is_prime());
         assert!(!63u64.is_prime());
+    }
+
+    #[test]
+    fn primes_distinct_factors_works() {
+        assert_eq!(
+            Primes::new().distinct_factors(646),
+            HashSet::from([2, 17, 19])
+        );
+        assert_eq!(Primes::new().distinct_factors(2), HashSet::from([2]));
+        assert_eq!(Primes::new().distinct_factors(8), HashSet::from([2]));
+        assert_eq!(Primes::new().distinct_factors(15), HashSet::from([3, 5]));
     }
 }
