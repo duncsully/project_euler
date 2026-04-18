@@ -10,7 +10,31 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver46());
+    println!("{}", solver47());
+}
+
+/// Oof, getting back into things after 5 months. Thankfully this problem itself was relatively
+/// simple. I just needed utilities for getting the distinct prime factors of a number. I'm not
+/// entirely happy with having bolted it onto my newer Primes iterative struct, based on my older
+/// PrimeNumbers struct that I felt got out of hand. I'm still trying to understand the best way
+/// to handle essentially memoization and DP in Rust.
+fn solver47() -> u64 {
+    let mut consecutive = 0;
+    let mut next = 646;
+    let mut primes = Primes::new();
+    while consecutive < 4 {
+        next += 1;
+        if primes.distinct_factors(next).len() == 4 {
+            consecutive += 1;
+        } else {
+            consecutive = 0;
+        }
+    }
+    (0..=3)
+        .rev()
+        .for_each(|d| println!("{}: {:?}", next - d, primes.distinct_factors(next - 3)));
+
+    next - 3
 }
 
 /// I was expecting this one to be a lot worse than it actually was. This time Rust iterators
