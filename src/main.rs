@@ -10,7 +10,26 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver47());
+    println!("{}", solver48());
+}
+
+/// This was a little finnicky, and relative to other problems I feel like I made this one harder
+/// than it had to be. I figured most of the behavior already existed in my BigInt util but I
+/// needed to control its length. I opted for a method to truncate after the fact rather than
+/// make a configurable limit so I wouldn't need to update my various operator implementations.
+fn solver48() -> String {
+    (1..=1000)
+        .fold(BigInt::new(), |acc, n| {
+            let mut total = BigInt::from(n);
+            (1..n).for_each(|_| {
+                total *= n;
+                total.left_truncate(10);
+            });
+            total += acc;
+            total.left_truncate(10);
+            total
+        })
+        .to_string()
 }
 
 /// Oof, getting back into things after 5 months. Thankfully this problem itself was relatively

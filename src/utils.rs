@@ -20,6 +20,10 @@ impl BigInt {
     pub fn digit_count(&self) -> usize {
         self.digits.len()
     }
+
+    pub fn left_truncate(&mut self, len: usize) {
+        self.digits.truncate(len);
+    }
 }
 
 impl From<u32> for BigInt {
