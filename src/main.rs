@@ -10,7 +10,50 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver48());
+    println!("{}", solver49());
+}
+
+/// Classic case of me ironically making things worse by trying to be too clever.
+/// I didn't consider that a permutation could still have repeating digits, so I
+/// started the candidates first after 1234 (later 1023) filtering for primes that
+/// had char set sizes of 4, stopping after 9876. Likewise I checked a candidate
+/// sequence by taking the full char set and checking if it was 4. After it dawned
+/// on me that digits could repeat, I made all the necessary fixes. Luckily most
+/// logic remained the same, the biggest change being making char sets for each
+/// number and checking for equality.
+///
+/// I wasn't sure that the difference between the numbers would still be 3330.
+/// That's bizarre! Had I know that, I could've vastly improved the looping logic.
+fn solver49() -> String {
+    let primes = Primes::new();
+    let candidates: Vec<u64> = primes
+        .skip_while(|prime| *prime < 1000)
+        .take_while(|prime| *prime <= 9999)
+        .collect();
+
+    let candidate_set: HashSet<_> = candidates.iter().to_owned().collect();
+    let len = candidates.len();
+    for i in 0..len - 2 {
+        let first = candidates[i];
+        for j in i + 1..len - 1 {
+            let second = candidates[j];
+            // Ignore the problem example sequence
+            if first == 1487 && second == 4817 {
+                continue;
+            }
+            let third = second + second - first;
+            if candidate_set.contains(&third) {
+                let first_hash: HashSet<_> = first.to_string().chars().collect();
+                let second_hash: HashSet<_> = second.to_string().chars().collect();
+                let third_hash: HashSet<_> = third.to_string().chars().collect();
+                if first_hash == second_hash && second_hash == third_hash {
+                    println!("Sequence step is {}", second - first);
+                    return format!("{first}{second}{third}");
+                }
+            }
+        }
+    }
+    panic!("No sequence found!");
 }
 
 /// This was a little finnicky, and relative to other problems I feel like I made this one harder
