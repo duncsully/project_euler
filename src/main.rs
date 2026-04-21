@@ -10,7 +10,85 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver49());
+    println!("{}", solver50());
+}
+
+/// Huh, so while this one required a bit of code, I thought the approach was actually fairly simple
+/// once I took some notes:
+/// - We'll get the most numbers if we start as low as possible and then run until we overflow
+/// - To be more efficient, we can "slide a window" to remove the fist value in a sequence and then
+///   add the next value
+/// - After exhausting all valid combinations, we can shrink the window
+/// - 2 is a special case that can be removed by itself
+/// - Otherwise since primes are odd and I'm looking for another prime, I'd always have to remove
+///   two at a time to keep the sum odd
+///
+/// So to start I simply find the largest sum below 1 mil of any primes sequence to initialize the
+/// window with which I would start searching, gradually shrinking as necessary.
+/// I got hung up for a little bit because of the last point, I made the silly assumption that I would
+/// end up with the correct number of values in the sequence and I'd have to back off by two primes.
+/// Though I could've noted the correct amount and hardcoded, I decided to keep the solution general
+/// (and hypothetically I could generalize it to check for the largest sequence sum prime below a given
+/// value this way) by checking if the sequence length resulted in an odd or even amount and back off
+/// by the appropriate amount. Then it worked like a charm!
+fn solver50() -> u64 {
+    let primes: Vec<_> = Primes::new()
+        .take_while(|prime| *prime < 1_000_000)
+        .collect();
+    let prime_set: HashSet<u64> = primes.iter().copied().collect();
+
+    let mut starting_upper = 3;
+    let mut starting_sum = 10;
+    // Find the maximum it could possibly be
+    while starting_sum < 1_000_000 {
+        starting_sum += primes[starting_upper];
+        starting_sum += primes[starting_upper + 1];
+        starting_upper += 2;
+    }
+
+    // Backtrack, these are now the initial values to seed the loops efficiently
+    if starting_sum % 2 == 0 {
+        starting_upper -= 1;
+        starting_sum -= primes[starting_upper]
+    } else {
+        starting_upper -= 2;
+        starting_sum -= primes[starting_upper] + primes[starting_upper + 1];
+    }
+
+    loop {
+        // We always restart with including 2 since it is removed by itself
+        let mut lower = 0;
+        // The right boundary of our moving window
+        let mut upper = starting_upper;
+        // The running total of the window as it slides
+        let mut sum = starting_sum;
+        while sum < 1_000_000 && upper < primes.len() {
+            if prime_set.contains(&sum) {
+                print!(
+                    "Sum of consecutive primes from {} to {} = ",
+                    primes[lower],
+                    primes[upper - 1]
+                );
+                return sum;
+            }
+            // Again, 2 is removed by itself in order to keep the sum odd and possibly prime
+            if lower == 0 {
+                lower = 1;
+                sum -= 2;
+            // Else we slide the window maintaining this length of consecutive primes
+            } else {
+                sum -= primes[lower];
+                sum += primes[upper];
+
+                lower += 1;
+                upper += 1;
+            }
+        }
+        // We didn't find any consecutive primes of that sized window, so shrink the window
+        // by two, again to keep the sum odd and thus a possible prime
+        starting_upper -= 2;
+        starting_sum -= primes[starting_upper] + primes[starting_upper + 1];
+    }
 }
 
 /// Classic case of me ironically making things worse by trying to be too clever.
