@@ -10,7 +10,81 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver50());
+    println!("{}", solver51());
+}
+
+/// Another 5 month hiatus. Just reading the problem makes this one feel messy. I can't think of many
+/// tricks off the bat so it seems this will be another highly brute-forced one. 
+/// 
+/// Huff, another messy-ish one that otherwise wasn't too bad. Just a few minor bumps along the way. 
+/// I was just using my primes iterator to create starting points but otherwise replacing the digits
+/// in it. I assumed erroneously that the starting prime would be part of the family. I'm not sure this
+/// was the best approach, but it made the logic of iterating through permutations of indices and replacement
+/// digits easier. I could've alternatively iterated waiting to find naturally repeating digits in primes
+/// and testing contenders that way, only testing larger digits (assuming that any smaller digits should've been
+/// caught and tested already). So like given 56003 I would've checked 66003, ..., 96003 and then 57003,
+/// ..., 59003 and then 56113, etc. Indeed that sounds more efficient because it guarantees the prime itself
+/// would be part of a family rather than an arbitrary prime that will have some permutation of indices
+/// replaced.
+/// 
+/// Anyway, after realizing the first prime wouldn't be included, I had to try something the problem didn't
+/// make clear: did leading 0s technically count? Because if so then technically the first prime was something
+/// like "000106". When it didn't take, I made a minor alteration to skip any checks involving swapping 0 in
+/// the 0th index. After that it took a notable number of seconds to find the answer, but it worked. I
+/// originally intended to return the number directly but over the course of debugging I sanity checked
+/// with the full vector of numbers and manually pulled the answer from there, honestly too lazy to finish
+/// altering the code to pass along the smallest number. Yeah, I'm sloppy.
+fn solver51() -> u64 {
+    // Track all primes we check so we don't needlessly repeat work
+    let mut checked_primes: HashSet<u64> = HashSet::new();
+
+    // We know 56003 is the smallest prime of a family of 7
+    Primes::new().skip_while(|&prime| prime <= 56003).take_while(|&prime| {
+        //println!("Checking {prime}");
+        // Is this prime part of a family that was checked already?
+        if checked_primes.contains(&prime) {
+            return true
+        }
+        checked_primes.insert(prime);
+        let string_prime = prime.to_string();
+
+        // Check each number of replacements up to but not including every single digit
+        !(1..string_prime.len()).any(|len| {
+            // Check every permutation of replacement indices
+            let indices: Vec<usize> = (0..string_prime.len()).collect();
+            let perms: Vec<Vec<usize>> = permutations(&indices, len).collect();
+            perms.iter().any(|perm| {
+                // Check every digit in replacement indices
+                let family = ('0'..='9').fold(vec![], |mut family, digit| {
+                    // We can't replace the first digit with 0, else it would shrink the number
+                    if digit == '0' && perm.contains(&0) {
+                        return family
+                    }
+                    //println!("Replacing indices {perm:?} with {digit}");
+                    let string_contender: String = (0..string_prime.len()).map(|index| {
+                        if perm.contains(&index) {
+                            digit
+                        } else {
+                            string_prime.chars().nth(index).unwrap()
+                        }
+                    }).collect();
+                    let contender: u64 = string_contender.parse().unwrap();
+                    if contender.is_prime() {
+                        //println!("Part of {prime}'s family: {contender}");
+                        checked_primes.insert(contender);
+                        family.push(contender);
+                    }
+                    family
+                });
+                if family.len() >= 8 {
+                    println!("Found family of size 8 or greater: {family:?}");
+                    true
+                } else {
+                    false
+                }
+            })
+        })
+    }).last().unwrap()
 }
 
 /// Huh, so while this one required a bit of code, I thought the approach was actually fairly simple
