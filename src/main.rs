@@ -10,7 +10,31 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver51());
+    println!("{}", solver52());
+}
+
+/// OK so off the bat I know the number will have to start with 1 because 2*6 = 12 which would increase
+/// the total number of digits. Likewise, the highest second digit can be 6 at most. 
+/// 
+/// Once again I tried to let cleverness and premature optimization get the better of me as I tried to derive
+/// rules of what digits were feasible given how certain multiples flipped oddity and whatnot, which ironically
+/// slowed down the process vs just brute forcing with the only optimization required being my initial observation
+/// of needing to start with 1. 
+/// 
+fn solver52() -> u64 {
+    (1000..).find(|n| {
+        let mut digs = digits(n);
+        if digs[0] != 1 {
+            return false;
+        }
+        digs.sort();
+        (2..=6).all(|i| {
+            let candidate = n * i;
+            let mut candigits = digits(candidate);
+            candigits.sort();
+            candigits == digs
+        })
+    }).unwrap()
 }
 
 /// Another 5 month hiatus. Just reading the problem makes this one feel messy. I can't think of many
