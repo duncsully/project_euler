@@ -425,6 +425,48 @@ pub fn is_pandigital(n: &u64) -> bool {
     digits_set == range_set
 }
 
+/// For a given binomial power (or "number of items to pick"), iterates through
+/// the coefficients of the terms in order (or the "number of ways to pick i items")
+#[derive(Debug)]
+pub struct BinomialCoefficients {
+    p: u64,
+    i: u64,
+    current: u64,
+}
+
+impl BinomialCoefficients {
+    pub fn new(p: u64) -> Self {
+        BinomialCoefficients {
+            p,
+            i: 0,
+            current: 1,
+        }
+    }
+}
+
+impl Iterator for BinomialCoefficients {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i > self.p {
+            return None
+        }
+        self.current = if self.i == 0 || self.i == self.p {
+            1
+        } else {
+            self.current * (self.p - self.i + 1) / self.i
+        };
+        self.i += 1;
+        Some(self.current)
+    }
+}
+
+pub fn binomial_coefficient(p: u64, k: u64) -> Option<u64> {
+    if k > p { return Some(0) };
+  let k = if k > p - k { p - k } else { k };
+  Some((0..k).fold(1, |result, i| { result * (p - i) / (i + 1) }))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -569,5 +611,16 @@ mod tests {
         assert_eq!(Primes::new().distinct_factors(2), HashSet::from([2]));
         assert_eq!(Primes::new().distinct_factors(8), HashSet::from([2]));
         assert_eq!(Primes::new().distinct_factors(15), HashSet::from([3, 5]));
+    }
+
+    #[test]
+    fn binomial_coefficients_iterator_works() {
+        let mut bc = BinomialCoefficients::new(4);
+        assert_eq!(bc.next().unwrap(), 1);
+        assert_eq!(bc.next().unwrap(), 4);
+        assert_eq!(bc.next().unwrap(), 6);
+        assert_eq!(bc.next().unwrap(), 4);
+        assert_eq!(bc.next().unwrap(), 1);
+        assert!(bc.next().is_none());
     }
 }

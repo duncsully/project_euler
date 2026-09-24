@@ -10,7 +10,28 @@ mod utils;
 use crate::utils::*;
 
 fn main() {
-    println!("{}", solver52());
+    println!("{}", solver53());
+}
+
+/// After a few false starts I'm happy with this approach. Basically, the nature of binomial coefficients
+/// is that for a given power ("total to pick from") you can calculate the coefficients iteratively, and so
+/// I keep calculating the next coefficient for a power until it's over 1 mil. And then likewise the nature
+/// of BCs is that they're symmetrical and so C(p, k) = C(p, p - k), therefor everything between those
+/// positions are also over 1 mil, so it's a simple calculation over every power up to 100.
+/// 
+/// An alternative approach I considered was using the DP recursive method to calculating BCs because the
+/// nature of iterating down the rows and within a few indices seemed like it could potentially be efficient
+/// computationally as well, but I also knew that would come with larger space requirements, and it didn't
+/// seem as elegant as this approach.
+fn solver53() -> u64 {
+    // We're skipping some steps technically, but since we know that C(23, 10) = C(23, 13) due to the
+    // symmetry of the binomial coefficients, it's easily deduced that the 11th and 12th items are also
+    // above 1mil, ergo start with 4.
+    (24..=100).fold(4, |total, p| {
+        let mut bc = BinomialCoefficients::new(p);
+        let index = bc.position(|i| i > 1_000_000).expect("should always contain");
+        total + p - 2 * (index as u64) + 1
+    })
 }
 
 /// OK so off the bat I know the number will have to start with 1 because 2*6 = 12 which would increase
